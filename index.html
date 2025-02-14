@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اكسسوارات</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+            color: #d63384;
+        }
+
+        .folder-gallery, .product-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 1200px;
+        }
+
+        .folder-item, .product-item {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .folder-item:hover, .product-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .product-item img, .folder-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #343a40;
+            color: white;
+        }
+
+        #backButton {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #d63384;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .product-details {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .product-details img {
+            max-width: 300px;
+            margin: 10px;
+        }
+
+        .detail-images {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .detail-images img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        .request-button {
+            padding: 10px 20px;
+            background-color: #d63384;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .popup-content button {
+            background-color: #d63384;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>اكسسوارات عياش</h1>
+
+    <div id="folderGallery" class="folder-gallery"></div>
+    <div id="productGallery" class="product-gallery" style="display: none;"></div>
+    <div id="productDetails" class="product-details"></div>
+    <button id="backButton">رجوع</button>
+    <div id="requestPopup" class="popup">
+        <div class="popup-content">
+            <h2>اختر طريقة الطلب</h2>
+            <button onclick="requestViaWhatsApp()">واتساب</button>
+            <button onclick="requestViaSMS()">رسالة نصية</button>
+            <button onclick="closePopup()">إغلاق</button>
+        </div>
+    </div>
+    <footer>
+        <p>© 2024 متجر الإكسسوارات النسائية. جميع الحقوق محفوظة.</p>
+    </footer>
+
+    <script>
+        const folders = JSON.parse(localStorage.getItem('folders')) || [];
+        const products = JSON.parse(localStorage.getItem('products')) || [];
+
+        function showFolders() {
+            const folderGallery = document.getElementById('folderGallery');
+            folderGallery.innerHTML = folders.map(folder => `
+                <div class="folder-item" onclick="showProducts('${folder.name}')">
+                    <img src="${folder.image}" alt="${folder.name}">
+                    <p>${folder.name}</p>
+                </div>
+            `).join('');
+        }
+
+        function showProducts(folderName) {
+            const productGallery = document.getElementById('productGallery');
+            const folderProducts = products.filter(product => product.folder === folderName);
+            productGallery.innerHTML = folderProducts.map(product => `
+                <div class="product-item" onclick="showProductDetails('${product.id}')">
+                    <img src="${product.image}" alt="${product.name}">
+                    <p>${product.name}</p>
+                    <p>${product.price}</p>
+                </div>
+            `).join('');
+            document.getElementById('folderGallery').style.display = 'none';
+            productGallery.style.display = 'grid';
+            document.getElementById('backButton').style.display = 'block';
+        }
+
+        function showProductDetails(productID) {
+            const product = products.find(p => p.id === productID);
+            const productDetails = document.getElementById('productDetails');
+            productDetails.innerHTML = `
+                <h2>${product.name}</h2>
+                <p>رقم تعريف المنتج: ${product.id}</p>
+                <img src="${product.image}" alt="${product.name}" onclick="showDetailImages(${products.indexOf(product)})">
+                <p>${product.price}</p>
+                <button class="request-button" onclick="openRequestPopup()">طلب المنتج</button>
+                <div class="detail-images" id="detailImages${productID}"></div>
+            `;
+            document.getElementById('productGallery').style.display = 'none';
+            productDetails.style.display = 'block';
+            loadDetailImages(productID);
+        }
+
+        function loadDetailImages(productID) {
+            const product = products.find(p => p.id === productID);
+            const detailImagesContainer = document.getElementById(`detailImages${productID}`);
+            detailImagesContainer.innerHTML = product.images.map(image => `
+                <img src="${image}" alt="تفاصيل ${product.name}" onclick="showLargeImage('${image}')">
+            `).join('');
+        }
+
+        function showLargeImage(imageSrc) {
+            const largeImage = window.open("", "تفاصيل الصورة", "width=600,height=400");
+            largeImage.document.write(`<img src="${imageSrc}" style="width:100%; height:auto;">`);
+        }
+
+        function openRequestPopup() {
+            document.getElementById('requestPopup').style.display = 'flex';
+        }
+
+        function closePopup() {
+            document.getElementById('requestPopup').style.display = 'none';
+        }
+
+        function requestViaWhatsApp() {
+            const productID = document.querySelector('.product-details p').innerText.split(": ")[1];
+            const productName = document.querySelector('.product-details h2').innerText;
+            const message = `طلب منتج: ${productName} - رقم التعريف: ${productID}`;
+            const whatsappURL = `https://wa.me/770200970?text=${encodeURIComponent(message)}`;
+            window.open(whatsappURL, '_blank');
+            closePopup();
+        }
+
+        function requestViaSMS() {
+            const productID = document.querySelector('.product-details p').innerText.split(": ")[1];
+            const productName = document.querySelector('.product-details h2').innerText;
+            const message = `طلب منتج: ${productName} - رقم التعريف: ${productID}`;
+            const smsURL = `sms:?body=${encodeURIComponent(message)}`;
+            window.open(smsURL, '_blank');
+            closePopup();
+        }
+
+        function backToFolders() {
+            document.getElementById('folderGallery').style.display = 'grid';
+            document.getElementById('productGallery').style.display = 'none';
+            document.getElementById('productDetails').style.display = 'none';
+            document.getElementById('backButton').style.display = 'none';
+        }
+
+        document.getElementById('backButton').addEventListener('click', backToFolders);
+        showFolders();
+    </script>
+</body>
+</html>

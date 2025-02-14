@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #d63384;
+            margin: 20px 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .form-group textarea {
+            height: 100px;
+        }
+
+        button {
+            background-color: #d63384;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #a71d60;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th, table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #f1f1f1;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>لوحة التحكم</h1>
+    <div class="container">
+        <h2>إضافة ملف جديد</h2>
+        <form id="folderForm">
+            <div class="form-group">
+                <label for="folderName">اسم الملف:</label>
+                <input type="text" id="folderName" required>
+            </div>
+            <div class="form-group">
+                <label for="folderImage">اختر الصورة:</label>
+                <input type="file" id="folderImage" accept="image/*" required>
+            </div>
+            <button type="submit">إضافة ملف</button>
+        </form>
+
+        <h2>إضافة منتج جديد</h2>
+        <form id="productForm">
+            <div class="form-group">
+                <label for="productID">رقم تعريف المنتج:</label>
+                <input type="text" id="productID" required>
+            </div>
+            <div class="form-group">
+                <label for="productName">اسم المنتج:</label>
+                <input type="text" id="productName" required>
+            </div>
+            <div class="form-group">
+                <label for="productPrice">السعر:</label>
+                <input type="text" id="productPrice" required>
+            </div>
+            <div class="form-group">
+                <label for="productImage">صورة رمزية للمنتج:</label>
+                <input type="file" id="productImage" accept="image/*" required>
+            </div>
+            <div class="form-group">
+                <label for="productImages">اختر الصور (يمكن اختيار عدة صور):</label>
+                <input type="file" id="productImages" accept="image/*" multiple required>
+            </div>
+            <div class="form-group">
+                <label for="productFolder">اسم الملف:</label>
+                <input type="text" id="productFolder" required>
+            </div>
+            <button type="submit">إضافة منتج</button>
+        </form>
+
+        <h2>شريط البحث</h2>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="ابحث عن الملفات أو المنتجات..." onkeyup="searchItems()">
+        </div>
+
+        <h2>عرض الملفات</h2>
+        <table id="foldersTable">
+            <thead>
+                <tr>
+                    <th>اسم الملف</th>
+                    <th>الصورة</th>
+                    <th>حذف</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <h2>عرض المنتجات</h2>
+        <table id="productsTable">
+            <thead>
+                <tr>
+                    <th>رقم تعريف المنتج</th>
+                    <th>اسم المنتج</th>
+                    <th>السعر</th>
+                    <th>اسم الملف</th>
+                    <th>صورة رمزية</th>
+                    <th>تفاصيل</th>
+                    <th>حذف</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const folders = JSON.parse(localStorage.getItem('folders')) || [];
+        const products = JSON.parse(localStorage.getItem('products')) || [];
+
+        function updateFoldersTable(filteredFolders = folders) {
+            const tableBody = document.getElementById('foldersTable').querySelector('tbody');
+            tableBody.innerHTML = filteredFolders.map((folder, index) => `
+                <tr>
+                    <td>${folder.name}</td>
+                    <td><img src="${folder.image}" alt="${folder.name}" style="width: 50px; height: 50px;"></td>
+                    <td><button onclick="deleteFolder(${index})">حذف</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function updateProductsTable(filteredProducts = products) {
+            const tableBody = document.getElementById('productsTable').querySelector('tbody');
+            tableBody.innerHTML = filteredProducts.map((product, index) => `
+                <tr>
+                    <td>${product.id}</td>
+                    <td>${product.name}</td>
+                    <td>${product.price}</td>
+                    <td>${product.folder}</td>
+                    <td><img src="${product.image}" alt="${product.name}" style="width: 50px; height: 50px;" onclick="showProductDetails(${index})"></td>
+                    <td><button onclick="showProductDetails(${index})">عرض التفاصيل</button></td>
+                    <td><button onclick="deleteProduct(${index})">حذف</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function searchItems() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+
+            const filteredFolders = folders.filter(folder => folder.name.toLowerCase().includes(input));
+            const filteredProducts = products.filter(product => {
+                return product.name.toLowerCase().includes(input) || 
+                       product.id.toLowerCase().includes(input);
+            });
+
+            updateFoldersTable(filteredFolders);
+            updateProductsTable(filteredProducts);
+        }
+
+        document.getElementById('folderForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const folderName = document.getElementById('folderName').value;
+            const folderImageInput = document.getElementById('folderImage');
+            const folderImage = URL.createObjectURL(folderImageInput.files[0]);
+
+            folders.push({ name: folderName, image: folderImage });
+            localStorage.setItem('folders', JSON.stringify(folders));
+            updateFoldersTable();
+        });
+
+        document.getElementById('productForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const productID = document.getElementById('productID').value;
+            const productName = document.getElementById('productName').value;
+            const productPrice = document.getElementById('productPrice').value;
+            const productImageInput = document.getElementById('productImage');
+            const productImage = URL.createObjectURL(productImageInput.files[0]);
+            const productImagesInput = document.getElementById('productImages');
+            const productImages = Array.from(productImagesInput.files).map(file => URL.createObjectURL(file));
+            const productFolder = document.getElementById('productFolder').value;
+
+            products.push({ id: productID, name: productName, price: productPrice, image: productImage, images: productImages, folder: productFolder });
+            localStorage.setItem('products', JSON.stringify(products));
+            updateProductsTable();
+        });
+
+        function deleteFolder(index) {
+            folders.splice(index, 1);
+            localStorage.setItem('folders', JSON.stringify(folders));
+            updateFoldersTable();
+        }
+
+        function deleteProduct(index) {
+            products.splice(index, 1);
+            localStorage.setItem('products', JSON.stringify(products));
+            updateProductsTable();
+        }
+
+        function showProductDetails(index) {
+            const product = products[index];
+            alert(`اسم المنتج: ${product.name}\nالسعر: ${product.price}\nتفاصيل الصور:\n${product.images.join('\n')}`);
+        }
+
+        updateFoldersTable();
+        updateProductsTable();
+    </script>
+</body>
+</html>
