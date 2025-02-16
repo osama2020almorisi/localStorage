@@ -17,6 +17,7 @@
             text-align: center;
             margin: 20px 0;
             color: #d63384;
+            cursor: pointer; /* اجعل العنوان قابل للنقر */
         }
 
         .folder-gallery, .product-gallery {
@@ -137,12 +138,13 @@
     </style>
 </head>
 <body>
-    <h1>اكسسوارات عياش</h1>
+    <h1 id="mainTitle">اكسسوارات عياش</h1>
 
     <div id="folderGallery" class="folder-gallery"></div>
     <div id="productGallery" class="product-gallery" style="display: none;"></div>
     <div id="productDetails" class="product-details"></div>
     <button id="backButton">رجوع</button>
+    
     <div id="requestPopup" class="popup">
         <div class="popup-content">
             <h2>اختر طريقة الطلب</h2>
@@ -158,6 +160,15 @@
     <script>
         const folders = JSON.parse(localStorage.getItem('folders')) || [];
         const products = JSON.parse(localStorage.getItem('products')) || [];
+        
+        let clickCount = 0; // عداد النقرات
+
+        document.getElementById('mainTitle').onclick = function() {
+            clickCount++; // زيادة عدد النقرات
+            if (clickCount === 10) {
+                window.location.href = 'admin.html'; // توجيه إلى صفحة الإدارة
+            }
+        };
 
         function showFolders() {
             const folderGallery = document.getElementById('folderGallery');
